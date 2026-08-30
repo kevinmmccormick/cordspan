@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-test-package:
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Install .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore .\Cordspan.sln -p:Platform=x64
+
+      - name: Test release build
+        run: dotnet test .\Cordspan.sln -c Release -p:Platform=x64 --no-restore --verbosity minimal
+
+      - name: Publish x64 application
+        run: >-
+          dotnet publish .\src\Cordspan\Cordspan.csproj
+          -c Release
+          -r win-x64
+          -p:Platform=x64
+          --self-contained false
+          --no-restore
+          -o .\staging\Cordspan
+
+      - name: Add release metadata
+        shell: pwsh
+        run: |
+          Copy-Item README.md, LICENSE, THIRD_PARTY_NOTICES.md .\staging\Cordspan\
+          Copy-Item .\docs\RELEASE_NOTES.md .\staging\Cordspan\
+          '0.1.0-alpha.1' | Set-Content .\staging\Cordspan\VERSION.txt -Encoding ascii
+          dotnet package list --project .\Cordspan.sln --format json --no-restore |
+            Set-Content .\staging\Cordspan\DEPENDENCIES.json -Encoding utf8
+
+      - name: Verify external tools are not bundled
+        shell: pwsh
+        run: |
+          $forbidden = Get-ChildItem .\staging\Cordspan -Recurse -File |
+            Where-Object Name -In @('usbip.exe', 'usbipd.exe')
+          if ($forbidden) {
+            $forbidden | ForEach-Object { Write-Error "Unexpected bundled tool: $($_.FullName)" }
+            exit 1
+          }
+
+      - name: Create archive and checksum
+        shell: pwsh
+        run: |
+          Compress-Archive -Path .\staging\Cordspan\* -DestinationPath .\Cordspan-win-x64.zip -CompressionLevel Optimal
+          (Get-FileHash .\Cordspan-win-x64.zip -Algorithm SHA256).Hash.ToLowerInvariant() + '  Cordspan-win-x64.zip' |
+            Set-Content .\Cordspan-win-x64.zip.sha256 -Encoding ascii
+
+      - name: Upload prerelease artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Cordspan-win-x64
+          path: |
+            Cordspan-win-x64.zip
+            Cordspan-win-x64.zip.sha256
+          if-no-files-found: error
+          retention-days: 14

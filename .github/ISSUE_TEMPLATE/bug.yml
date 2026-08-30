@@ -1,0 +1,44 @@
+name: Bug report
+description: Report a reproducible Cordspan problem
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Remove private hostnames, addresses, serial numbers, and credentials before submitting.
+  - type: input
+    id: version
+    attributes:
+      label: Cordspan version
+      placeholder: v0.1.0-alpha.1 or commit SHA
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior and error text
+    validations:
+      required: true
+  - type: textarea
+    id: tools
+    attributes:
+      label: USB/IP tool versions
+      description: Include usbipd-win and usbip-win2 versions when relevant.

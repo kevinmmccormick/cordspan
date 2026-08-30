@@ -1,0 +1,356 @@
+<Window
+    x:Class="Cordspan.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="Cordspan">
+
+    <Grid x:Name="Root" Background="Transparent">
+        <NavigationView
+            x:Name="Shell"
+            PaneTitle="Cordspan"
+            IsBackButtonVisible="Collapsed"
+            IsSettingsVisible="False"
+            IsPaneOpen="True"
+            OpenPaneLength="208"
+            CompactPaneLength="48"
+            PaneDisplayMode="Left"
+            AlwaysShowHeader="False"
+            SelectionChanged="Shell_SelectionChanged">
+            <NavigationView.MenuItems>
+                <NavigationViewItem x:Name="ThisPcNavItem" Content="This PC" Tag="ThisPc" IsSelected="True">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE770;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem x:Name="NetworkNavItem" Content="Network" Tag="Network">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE968;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem x:Name="SessionsNavItem" Content="Sessions" Tag="Sessions">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE7C3;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+            </NavigationView.MenuItems>
+            <NavigationView.PaneFooter>
+                <StackPanel Margin="12,0,12,12" Spacing="8">
+                    <TextBlock Text="Tools" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <TextBlock Text="{Binding ToolSummary}" Style="{StaticResource CaptionTextBlockStyle}" TextTrimming="CharacterEllipsis" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                </StackPanel>
+            </NavigationView.PaneFooter>
+
+            <Grid Padding="20" RowSpacing="20" SizeChanged="ContentRoot_SizeChanged">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <Grid ColumnSpacing="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="{Binding PageTitle}" Style="{StaticResource TitleTextBlockStyle}" />
+                        <TextBlock Text="{Binding PageSubtitle}" Style="{StaticResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    </StackPanel>
+
+                    <CommandBar Grid.Column="1" Background="Transparent" DefaultLabelPosition="Right" IsDynamicOverflowEnabled="True">
+                        <AppBarButton Icon="Refresh" Label="Refresh" Click="RefreshButton_Click" />
+                        <AppBarButton Icon="Help" Label="USB/IP" Click="OpenUsbipDocs_Click" />
+                    </CommandBar>
+                </Grid>
+
+                <Grid x:Name="ThisPcPage" Grid.Row="1" ColumnSpacing="20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition x:Name="ThisPcSummaryColumn" Width="300" />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid RowSpacing="12">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <AutoSuggestBox PlaceholderText="Search local devices" QueryIcon="Find" TextChanged="SearchBox_TextChanged" />
+
+                        <ListView Grid.Row="1" ItemsSource="{Binding VisibleDevices}" SelectionMode="None" Background="Transparent" BorderThickness="0" Padding="0">
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="ListViewItem" BasedOn="{StaticResource DefaultListViewItemStyle}">
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                    <Setter Property="Padding" Value="0" />
+                                    <Setter Property="Margin" Value="0,0,0,8" />
+                                </Style>
+                            </ListView.ItemContainerStyle>
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource SettingsCardStyle}">
+                                        <Grid ColumnSpacing="16">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="40" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <Border Width="40" Height="40" CornerRadius="20" Background="{ThemeResource ControlFillColorSecondaryBrush}">
+                                                <FontIcon Glyph="&#xE964;" FontSize="18" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            </Border>
+
+                                            <StackPanel Grid.Column="1" Spacing="6" VerticalAlignment="Center">
+                                                <Grid ColumnSpacing="12">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="{Binding Name}" Style="{StaticResource BodyStrongTextBlockStyle}" TextTrimming="CharacterEllipsis" />
+                                                    <Border Grid.Column="1" Background="{ThemeResource ControlFillColorSecondaryBrush}" BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="4" Padding="8,3">
+                                                        <TextBlock Text="{Binding State}" Style="{StaticResource CaptionTextBlockStyle}" />
+                                                    </Border>
+                                                </Grid>
+                                                <StackPanel Orientation="Horizontal" Spacing="12">
+                                                    <TextBlock Text="{Binding BusId}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                    <TextBlock Text="{Binding VidPid}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                    <TextBlock Text="{Binding Category}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                                </StackPanel>
+                                            </StackPanel>
+
+                                            <CommandBar Grid.Column="2" Background="Transparent" DefaultLabelPosition="Collapsed" OverflowButtonVisibility="Collapsed" VerticalAlignment="Center">
+                                                <AppBarButton
+                                                    Icon="Share"
+                                                    Label="Share"
+                                                    ToolTipService.ToolTip="Share this device"
+                                                    AutomationProperties.Name="Share this device"
+                                                    Tag="{Binding}"
+                                                    Click="ShareButton_Click"
+                                                    IsEnabled="{Binding CanShare}" />
+                                                <AppBarButton
+                                                    Icon="Repair"
+                                                    Label="Force share"
+                                                    ToolTipService.ToolTip="Force share this device"
+                                                    AutomationProperties.Name="Force share this device"
+                                                    Tag="{Binding}"
+                                                    Click="ForceShareButton_Click"
+                                                    IsEnabled="{Binding CanForceShare}" />
+                                                <AppBarButton
+                                                    Label="Stop sharing"
+                                                    ToolTipService.ToolTip="Stop sharing this device"
+                                                    AutomationProperties.Name="Stop sharing this device"
+                                                    Tag="{Binding}"
+                                                    Click="UnshareButton_Click"
+                                                    IsEnabled="{Binding CanUnshare}">
+                                                    <AppBarButton.Icon>
+                                                        <FontIcon Glyph="&#xE8F9;" />
+                                                    </AppBarButton.Icon>
+                                                </AppBarButton>
+                                            </CommandBar>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </Grid>
+
+                    <StackPanel x:Name="ThisPcSummaryRail" Grid.Column="1" Spacing="12">
+                        <Border Style="{StaticResource SettingsCardStyle}">
+                            <StackPanel Spacing="12">
+                                <TextBlock Text="Host summary" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                                <Grid ColumnSpacing="12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition />
+                                        <ColumnDefinition />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding DeviceCount}" Style="{StaticResource MetricValueTextStyle}" />
+                                        <TextBlock Text="Local devices" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="{Binding VisibleDeviceCount}" Style="{StaticResource MetricValueTextStyle}" />
+                                        <TextBlock Text="Shown" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <InfoBar IsOpen="True" IsClosable="False" Severity="Informational" Title="Trusted networks only" Message="Shared USB devices are reachable by USB/IP clients that can access this PC on TCP port 3240." />
+                    </StackPanel>
+                </Grid>
+
+                <Grid x:Name="NetworkPage" Grid.Row="1" Visibility="Collapsed" RowSpacing="16" MaxWidth="940" HorizontalAlignment="Left">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="RemoteHostBox" Header="Remote host" PlaceholderText="Hostname or IP address" Text="{Binding RemoteHost, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Bottom">
+                            <Button Content="Check host" Click="CheckHostButton_Click" />
+                            <Button Content="List devices" Click="ListRemoteButton_Click" />
+                        </StackPanel>
+                    </Grid>
+
+                    <ListView Grid.Row="1" ItemsSource="{Binding DiscoveredHosts}" SelectionMode="None" Background="Transparent" BorderThickness="0" Padding="0" MaxHeight="180">
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem" BasedOn="{StaticResource DefaultListViewItemStyle}">
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                <Setter Property="Padding" Value="0" />
+                                <Setter Property="Margin" Value="0,0,0,8" />
+                            </Style>
+                        </ListView.ItemContainerStyle>
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource SettingsCardStyle}">
+                                    <Grid ColumnSpacing="16">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="40" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border Width="40" Height="40" CornerRadius="20" Background="{ThemeResource ControlFillColorSecondaryBrush}">
+                                            <FontIcon Glyph="&#xE968;" FontSize="18" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        </Border>
+                                        <StackPanel Grid.Column="1" Spacing="6">
+                                            <TextBlock Text="{Binding Host}" Style="{StaticResource BodyStrongTextBlockStyle}" TextTrimming="CharacterEllipsis" />
+                                            <StackPanel Orientation="Horizontal" Spacing="12">
+                                                <TextBlock Text="{Binding Status}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                <TextBlock Text="{Binding ExportedDeviceCount}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                <TextBlock Text="exports" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                        <Button Grid.Column="2" Content="List" Tag="{Binding}" Click="ListDiscoveredHostButton_Click" VerticalAlignment="Center" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+
+                    <Border x:Name="NetworkEmptyState" Grid.Row="2" Style="{StaticResource SettingsCardStyle}">
+                        <StackPanel Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="20">
+                            <FontIcon Glyph="&#xE968;" FontSize="28" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            <TextBlock Text="No remote host selected" Style="{StaticResource BodyStrongTextBlockStyle}" HorizontalAlignment="Center" />
+                            <TextBlock Text="Enter a hostname or IP address, then check the host or list its shared USB devices." Style="{StaticResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextAlignment="Center" TextWrapping="WrapWholeWords" MaxWidth="420" />
+                        </StackPanel>
+                    </Border>
+
+                    <ListView Grid.Row="2" ItemsSource="{Binding RemoteDevices}" SelectionMode="None" Background="Transparent" BorderThickness="0" Padding="0">
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem" BasedOn="{StaticResource DefaultListViewItemStyle}">
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                <Setter Property="Padding" Value="0" />
+                                <Setter Property="Margin" Value="0,0,0,8" />
+                            </Style>
+                        </ListView.ItemContainerStyle>
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource SettingsCardStyle}">
+                                    <Grid ColumnSpacing="16">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="40" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border Width="40" Height="40" CornerRadius="20" Background="{ThemeResource ControlFillColorSecondaryBrush}">
+                                            <FontIcon Glyph="&#xE968;" FontSize="18" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        </Border>
+                                        <StackPanel Grid.Column="1" Spacing="6">
+                                            <TextBlock Text="{Binding Name}" Style="{StaticResource BodyStrongTextBlockStyle}" TextTrimming="CharacterEllipsis" />
+                                            <StackPanel Orientation="Horizontal" Spacing="12">
+                                                <TextBlock Text="{Binding Host}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                <TextBlock Text="{Binding BusId}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                <TextBlock Text="{Binding VidPid}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                        <Button Grid.Column="2" Content="Attach" Tag="{Binding}" Click="AttachRemoteButton_Click" VerticalAlignment="Center" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </Grid>
+
+                <Grid x:Name="SessionsPage" Grid.Row="1" Visibility="Collapsed" RowSpacing="12" MaxWidth="900" HorizontalAlignment="Left">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <Border Style="{StaticResource SettingsCardStyle}">
+                            <StackPanel>
+                                <TextBlock Text="{Binding ImportedCount}" Style="{StaticResource MetricValueTextStyle}" />
+                                <TextBlock Text="Imported devices" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Column="1" Style="{StaticResource SettingsCardStyle}">
+                            <StackPanel>
+                                <TextBlock Text="{Binding SharedCount}" Style="{StaticResource MetricValueTextStyle}" />
+                                <TextBlock Text="Active shares" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <ListView Grid.Row="1" ItemsSource="{Binding ImportedDevices}" SelectionMode="None" Background="Transparent" BorderThickness="0" Padding="0">
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem" BasedOn="{StaticResource DefaultListViewItemStyle}">
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                <Setter Property="Padding" Value="0" />
+                                <Setter Property="Margin" Value="0,0,0,8" />
+                            </Style>
+                        </ListView.ItemContainerStyle>
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource SettingsCardStyle}">
+                                    <Grid ColumnSpacing="16">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="40" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border Width="40" Height="40" CornerRadius="20" Background="{ThemeResource ControlFillColorSecondaryBrush}">
+                                            <FontIcon Glyph="&#xE7C3;" FontSize="18" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        </Border>
+                                        <StackPanel Grid.Column="1" Spacing="6">
+                                            <TextBlock Text="{Binding Name}" Style="{StaticResource BodyStrongTextBlockStyle}" TextTrimming="CharacterEllipsis" />
+                                            <StackPanel Orientation="Horizontal" Spacing="12">
+                                                <TextBlock Text="{Binding Port}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                <TextBlock Text="{Binding RemoteHost}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                <TextBlock Text="{Binding RemoteBusId}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                <TextBlock Text="{Binding VidPid}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                        <Button Grid.Column="2" Content="Detach" Tag="{Binding}" Click="DetachImportedButton_Click" VerticalAlignment="Center" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+
+                    <Border x:Name="SessionsEmptyState" Grid.Row="1" Style="{StaticResource SettingsCardStyle}">
+                        <StackPanel Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="20">
+                            <FontIcon Glyph="&#xE7C3;" FontSize="28" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            <TextBlock Text="No imported devices" Style="{StaticResource BodyStrongTextBlockStyle}" HorizontalAlignment="Center" />
+                            <TextBlock Text="Attach a shared USB device from the Network page and it will appear here with detach controls." Style="{StaticResource BodyTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextAlignment="Center" TextWrapping="WrapWholeWords" MaxWidth="420" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <InfoBar Grid.Row="2" IsOpen="{Binding IsStatusOpen}" Severity="{Binding StatusSeverity}" Title="{Binding StatusTitle}" Message="{Binding StatusMessage}" IsClosable="False" />
+            </Grid>
+        </NavigationView>
+    </Grid>
+</Window>
