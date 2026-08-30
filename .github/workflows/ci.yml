@@ -14,6 +14,11 @@ permissions:
 jobs:
   build-test-package:
     runs-on: windows-latest
+    timeout-minutes: 20
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      DOTNET_CLI_USE_MSBUILD_SERVER: 0
+      MSBUILDDISABLENODEREUSE: 1
 
     steps:
       - name: Check out source
@@ -33,7 +38,10 @@ jobs:
           -c Release
           -p:Platform=x64
           -m:1
+          -nr:false
+          -p:BuildInParallel=false
           -p:UseSharedCompilation=false
+          --disable-build-servers
           --no-restore
           --verbosity minimal
 
@@ -43,6 +51,8 @@ jobs:
           -c Release
           -r win-x64
           -p:Platform=x64
+          -p:BuildInParallel=false
+          -p:UseSharedCompilation=false
           --self-contained false
           --no-restore
           -o .\staging\Cordspan
