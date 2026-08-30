@@ -29,19 +29,29 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
-      - name: Restore
-        run: dotnet restore .\Cordspan.sln -p:Platform=x64
+      - name: Install MSBuild
+        uses: microsoft/setup-msbuild@v2
 
-      - name: Test release build
+      - name: Restore
+        run: msbuild .\Cordspan.sln /t:Restore /p:Platform=x64 /m:1 /nr:false /v:minimal
+
+      - name: Build release
         run: >-
-          dotnet test .\Cordspan.sln
+          msbuild .\Cordspan.sln
+          /t:Build
+          /p:Configuration=Release
+          /p:Platform=x64
+          /p:ContinuousIntegrationBuild=true
+          /m:1
+          /nr:false
+          /v:minimal
+
+      - name: Run tests
+        run: >-
+          dotnet test .\tests\Cordspan.Tests\Cordspan.Tests.csproj
           -c Release
           -p:Platform=x64
-          -m:1
-          -nr:false
-          -p:BuildInParallel=false
-          -p:UseSharedCompilation=false
-          --disable-build-servers
+          --no-build
           --no-restore
           --verbosity minimal
 
