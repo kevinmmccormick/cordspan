@@ -48,9 +48,12 @@ jobs:
 
       - name: Run tests
         run: >-
-          dotnet vstest
-          .\tests\Cordspan.Tests\bin\x64\Release\net10.0-windows10.0.19041.0\Cordspan.Tests.dll
-          '/Platform:x64'
+          dotnet test .\tests\Cordspan.Tests\Cordspan.Tests.csproj
+          -c Release
+          --no-build
+          --no-restore
+          --logger "console;verbosity=normal"
+          --blame-hang-timeout 2m
 
       - name: Publish x64 application
         run: >-
