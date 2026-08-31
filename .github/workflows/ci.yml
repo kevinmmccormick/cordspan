@@ -50,6 +50,7 @@ jobs:
         run: >-
           dotnet test .\tests\Cordspan.Tests\Cordspan.Tests.csproj
           -c Release
+          -p:Platform=x64
           --no-build
           --no-restore
           --logger "console;verbosity=normal"
