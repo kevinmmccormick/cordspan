@@ -30,7 +30,7 @@ jobs:
           dotnet-version: 10.0.x
 
       - name: Install MSBuild
-        uses: microsoft/setup-msbuild@v2
+        uses: microsoft/setup-msbuild@v3
 
       - name: Restore
         run: msbuild .\Cordspan.sln /t:Restore /p:Platform=x64 /m:1 /nr:false /v:minimal
